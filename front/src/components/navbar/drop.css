@@ -1,0 +1,56 @@
+/* src/BeautifulDropdown.css */
+.dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-button {
+    background-color: #dba622;
+    color: white;
+    padding: 9px 18px;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: auto;
+  }
+  
+  .dropdown-button:hover {
+    background-color: #a3790e;
+  }
+    
+  .dropdown-list {
+    margin-top: 2px;
+    display: block;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 70px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    z-index: 1;
+    animation: fadeIn 0.3s ease-in-out;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .dropdown-item {
+    color: black;
+    padding: 8px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #bbbbbb;
+  }
+  

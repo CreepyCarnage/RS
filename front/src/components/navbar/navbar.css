@@ -1,0 +1,40 @@
+.navbar{
+  height: 100px;
+  background-color: #0e1111;
+  display: flex;
+  justify-content: center;
+}
+
+.navContainer{
+  width: 100%;
+  max-width: 1024px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo{
+  font-family: "Georgia", Times, serif;
+  border: 1 solid white;
+}
+
+.navButton{
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: #dba622;
+  color: white;
+  font-weight: 500;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.navButton:hover {
+  background-color: #a3790e;
+}
+
+.dropdown {
+  margin-left: 10px;
+}
