@@ -63,7 +63,7 @@ const Widget = ({ type }) => {
               backgroundColor: "rgba(255, 0, 0, 0.2)",
             }}
           />
-        ),
+        )
       };
       break;
     case "order":

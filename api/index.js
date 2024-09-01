@@ -6,8 +6,10 @@ import usersRoute from "./routes/users.js";
 import hotelsRoute from "./routes/hotels.js";
 import roomsRoute from "./routes/rooms.js";
 import reservationsRoute from './routes/reservations.js';
+import earnings from './routes/earnings.js';
 import cookieParser from "cookie-parser";
 import cors from "cors";
+
 
 const app = express()
 dotenv.config()
@@ -42,7 +44,7 @@ app.use("/api/users", usersRoute);
 app.use("/api/rooms", roomsRoute);
 app.use("/api/hotels", hotelsRoute);
 app.use("/api/reservations", reservationsRoute);
-
+app.use('/api/earnings', earnings);
 
 app.listen(8800, () =>{
     connect()

@@ -14,6 +14,7 @@ import NewHotel from "./pages/newHotel/NewHotel";
 import NewRoom from "./pages/newRoom/NewRoom";
 import Register from "./pages/register/Register";
 import ForgotPassword from "./pages/forgot/ForgotPassword";
+import Earnings from "./pages/Earnings/Earnings";
 
 function App() {
   const { darkMode } = useContext(DarkModeContext);
@@ -74,6 +75,11 @@ function App() {
             <Route path=":productId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
               
             </Route>
+            <Route path="earnings" element={
+            <ProtectedRoute>
+              <Earnings />
+            </ProtectedRoute>
+          } />
           </Route>
         </Routes>
       </BrowserRouter>
