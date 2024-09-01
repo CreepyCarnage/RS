@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import './PaymentPage.scss';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -20,11 +20,11 @@ const PaymentPage = () => {
 
   const { selectedRooms, hotelId, dates } = location.state || {};
 
-  if (!selectedRooms || selectedRooms.length === 0) {
-    setError("No rooms selected. Please go back and select rooms.");
-    return;
-  }
-
+  useEffect(() => {
+    if (!selectedRooms || selectedRooms.length === 0) {
+      setError("No rooms selected. Please go back and select rooms.");
+    }
+  }, [selectedRooms]);
 
   const handleCardDetailsChange = (e) => {
     setCardDetails({ ...cardDetails, [e.target.name]: e.target.value });
@@ -71,12 +71,10 @@ const PaymentPage = () => {
         const startDate = new Date(dates.startDate).toISOString();
         const endDate = new Date(dates.endDate).toISOString();
   
-        const rooms = selectedRooms.flatMap((room) => 
-          room.roomNumbers.map((roomNumber) => ({
-            roomId: room.roomId,
-            roomNumber: roomNumber
-          }))
-        );
+        const rooms = selectedRooms.map((room) => ({
+          roomId: room.roomId,
+          roomNumber: parseInt(room.actualRoomNumber, 10)
+        }));
   
         console.log('Sending reservation data:', {
           userId: user._id,
@@ -90,7 +88,7 @@ const PaymentPage = () => {
           transactionId: paymentResult.transactionId || 'cash_payment'
         });
   
-        const reservationResponse = await axios.post('/reservations', {
+        const reservationResponse = await axios.post('/reservations/create', {
           userId: user._id,
           hotelId,
           rooms,
@@ -104,25 +102,25 @@ const PaymentPage = () => {
   
         if (reservationResponse.status === 200) {
           console.log("Selected Rooms:", selectedRooms);
-console.log("Rooms to update:", rooms);
+          console.log("Rooms to update:", rooms);
 
-if (!rooms || rooms.length === 0) {
-  console.error("No rooms selected for reservation");
-  setError("Please select at least one room before confirming.");
-  return;
-}
+          if (!rooms || rooms.length === 0) {
+            console.error("No rooms selected for reservation");
+            setError("Please select at least one room before confirming.");
+            return;
+          }
           
-await Promise.all(rooms.map((room) => {
-  if (!room || !room.roomId) {
-    console.error("Invalid room data:", room);
-    throw new Error("Invalid room data");
-  }
-  return axios.put(`/rooms/availability/${room.roomId}`, {
-    roomNumber: room.roomNumber,
-    dates: [startDate, endDate],
-    bookingNumber: newBookingNumber
-  });
-}));
+          await Promise.all(rooms.map((room) => {
+            if (!room || !room.roomId) {
+              console.error("Invalid room data:", room);
+              throw new Error("Invalid room data");
+            }
+            return axios.put(`/rooms/availability/${room.roomId}`, {
+              roomNumber: room.roomNumber,
+              dates: [startDate, endDate],
+              bookingNumber: newBookingNumber
+            });
+          }));
   
           setIsSubmitted(true);
         } else {
@@ -170,7 +168,6 @@ await Promise.all(rooms.map((room) => {
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           
           <form onSubmit={handleSubmit}>
-            {/* Payment method selection */}
             <div className="mb-4 payment-methods">
               {['credit-card', 'upi', 'cash'].map((method) => (
                 <div className="form-check payment-method" key={method}>

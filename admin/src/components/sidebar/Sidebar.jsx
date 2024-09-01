@@ -1,9 +1,9 @@
 import "./sidebar.scss";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import StoreIcon from "@mui/icons-material/Store";
+import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
+import KingBedOutlinedIcon from '@mui/icons-material/KingBedOutlined';
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
@@ -46,20 +46,20 @@ const Sidebar = () => {
           </Link>
           <Link to="/hotels" style={{color:"inherit", textDecoration: "none" }}>
             <li>
-              <StoreIcon className="icon" />
+              <ApartmentOutlinedIcon className="icon" />
               <span >Hotels</span>
             </li>
           </Link>
           <Link to="/rooms" style={{color:"inherit", textDecoration: "none" }}>
           <li>
-            <CreditCardIcon className="icon" />
+            <KingBedOutlinedIcon className="icon" />
             <span>Rooms</span>
           </li>
           </Link>
-          <Link to="/orders" style={{color:"inherit", textDecoration: "none" }}>
+          <Link to="/reservations" style={{color:"inherit", textDecoration: "none" }}>
           <li>
-            <LocalShippingIcon className="icon" />
-            <span>Order</span>
+            <ConfirmationNumberOutlinedIcon className="icon" />
+            <span>Reservations</span>
           </li>
           </Link>
 

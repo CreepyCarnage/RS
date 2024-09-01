@@ -28,7 +28,7 @@ const Header = ({ type }) => {
   const [options, setOptions] = useState({
     adult: 1,
     children: 0,
-    room: 1,
+    room: 0,
   });
 
   const navigate = useNavigate();

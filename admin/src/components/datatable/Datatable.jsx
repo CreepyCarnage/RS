@@ -8,23 +8,30 @@ import axios from "axios";
 const Datatable = ({ columns }) => {
   const location = useLocation();
   const path = location.pathname.split("/")[1];
-  const [list, setList] = useState([]); // Initialize list state with an empty array
+  const [list, setList] = useState([]);
 
   const { data } = useFetch(`/${path}`);
 
   useEffect(() => {
     if (data) {
-      setList(data); // Update list state with fetched data
+      setList(data);
     }
   }, [data]);
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/${path}/${id}`);
+      if (path === "rooms") {
+        await axios.delete(`/${path}/${id}`);
+        alert("Room deleted successfully and removed from the hotel.");
+      } else {
+        await axios.delete(`/${path}/${id}`);
+        alert(`${path.slice(0, -1)} deleted successfully.`);
+      }
+      setList(list.filter((item) => item._id !== id));
     } catch (err) {
-      // Handle error
+      console.error("Error deleting item:", err);
+      alert("Failed to delete. Please try again.");
     }
-    setList(list.filter((item) => item._id !== id));
   };
 
   const actionColumn = [
@@ -35,7 +42,7 @@ const Datatable = ({ columns }) => {
       renderCell: (params) => {
         return (
           <div className="cellAction">
-            <Link to={`/${path}/test`} style={{ textDecoration: "none" }}>
+            <Link to={`/${path}/${params.row._id}`} style={{ textDecoration: "none" }}>
               <div className="viewButton">View</div>
             </Link>
             <div
@@ -54,9 +61,11 @@ const Datatable = ({ columns }) => {
     <div className="datatable">
       <div className="datatableTitle">
         {path}
-        <Link to={`/${path}/new`} className="link">
-          Add New
-        </Link>
+        {path !== "reservations" && (
+          <Link to={`/${path}/new`} className="link">
+            Add New
+          </Link>
+        )}
       </div>
       <DataGrid
         className="datagrid"

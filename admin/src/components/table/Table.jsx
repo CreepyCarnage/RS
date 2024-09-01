@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./table.scss";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -8,88 +10,62 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 const List = () => {
-  const rows = [
-    {
-      id: 1143155,
-      product: "",
-      img: "",
-      customer: "random 1",
-      date: "1 March",
-      amount: 785,
-      method: "Cash ",
-      status: "Approved",
-    },
-    {
-      id: 2235235,
-      product: "",
-      img: "",
-      customer: "Random 2",
-      date: "1 March",
-      amount: 900,
-      method: "Online Payment",
-      status: "Pending",
-    },
-    {
-      id: 2342353,
-      product: "",
-      img: "",
-      customer: "Random 3",
-      date: "1 March",
-      amount: 35,
-      method: "Cash ",
-      status: "Pending",
-    },
-    {
-      id: 2357741,
-      product: "",
-      img: "",
-      customer: "Random 4",
-      date: "1 March",
-      amount: 920,
-      method: "Online",
-      status: "Approved",
-    },
-    {
-      id: 2342355,
-      product: "",
-      img: "",
-      customer: "Random 5",
-      date: "1 March",
-      amount: 2000,
-      method: "Online",
-      status: "Pending",
-    },
-  ];
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("/reservations", { withCredentials: true });
+        // Sort reservations by date (assuming there's a createdAt field)
+        const sortedReservations = response.data.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        // Get only the last 5 reservations
+        setReservations(sortedReservations.slice(0, 5));
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch reservations:", error);
+        setError("Failed to load reservations. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchReservations();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   return (
     <TableContainer component={Paper} className="table">
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Tracking ID</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Hotel</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Customer</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Date</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Amount</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Payment Method</TableCell>
-            <TableCell className="tableCell" sx={{ fontWeight: 'bold',fontSize:'16px'}}>Status</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Booking ID</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Hotel</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Customer</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Check-in Date</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Check-out Date</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Amount</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Payment Method</TableCell>
+            <TableCell className="tableCell" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Status</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell className="tableCell">{row.id}</TableCell>
+          {reservations.map((reservation) => (
+            <TableRow key={reservation._id}>
+              <TableCell className="tableCell">{reservation._id}</TableCell>
+              <TableCell className="tableCell">{reservation.hotelId?.name || 'N/A'}</TableCell>
+              <TableCell className="tableCell">{reservation.userId?.username || 'N/A'}</TableCell>
+              <TableCell className="tableCell">{new Date(reservation.startDate).toLocaleDateString()}</TableCell>
+              <TableCell className="tableCell">{new Date(reservation.endDate).toLocaleDateString()}</TableCell>
+              <TableCell className="tableCell">₹{reservation.totalAmount}</TableCell>
+              <TableCell className="tableCell">{reservation.paymentMethod}</TableCell>
               <TableCell className="tableCell">
-                <div className="cellWrapper">
-                  <img src={row.img} alt="" className="image" />
-                  {row.product}
-                </div>
-              </TableCell>
-              <TableCell className="tableCell">{row.customer}</TableCell>
-              <TableCell className="tableCell">{row.date}</TableCell>
-              <TableCell className="tableCell">₹{row.amount}</TableCell>
-              <TableCell className="tableCell">{row.method}</TableCell>
-              <TableCell className="tableCell">
-                <span className={`status ${row.status}`}>{row.status}</span>
+                <span className={`status ${reservation.status}`}>{reservation.status}</span>
               </TableCell>
             </TableRow>
           ))}

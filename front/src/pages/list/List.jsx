@@ -2,27 +2,48 @@ import "./list.css";
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { format } from "date-fns";
 import { DateRange } from "react-date-range";
 import SearchItem from "../../components/searchItem/SearchItem";
 import useFetch from "../../components/hooks/useFetch";
+import { SearchContext } from "../../context/SearchContext";
 
 const List = () => {
   const location = useLocation();
-  const [destination, setDestination] = useState(location.state.destination);
-  const [dates, setDates] = useState(location.state.dates);
+  const [destination, setDestination] = useState(location.state?.destination || "");
+  const [dates, setDates] = useState(location.state?.dates || [
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
   const [openDate, setOpenDate] = useState(false);
-  const [options, setOptions] = useState(location.state.options);
-  const [min, setMin] = useState(undefined);
-  const [max, setMax] = useState(undefined);
+  const [options, setOptions] = useState(location.state?.options || {
+    adult: 1,
+    children: 0,
+    room: 1,
+  });
+  const [min, setMin] = useState("");
+  const [max, setMax] = useState("");
 
-  const {data,loading,error, reFetch} = useFetch(
-    `/hotels?city=${destination}&min=${ min || 0 }&max=${ max || 9999999 }`);
+  const { dispatch } = useContext(SearchContext);
 
-  const handleClick= () => {
-    reFetch()
-  }
+  useEffect(() => {
+    dispatch({ 
+      type: "NEW_SEARCH", 
+      payload: { destination, dates, options }
+    });
+  }, [destination, dates, options, dispatch]);
+
+  const { data, loading, error, reFetch } = useFetch(
+    `/hotels?city=${destination}&min=${min || 0}&max=${max || 999999}`
+  );
+
+  const handleClick = () => {
+    reFetch();
+  };
 
   return (
     <div>
@@ -34,7 +55,12 @@ const List = () => {
             <h1 className="lsTitle">Search</h1>
             <div className="lsItem">
               <label>Destination</label>
-              <input placeholder={destination} type="text" />
+              <input 
+                placeholder={destination} 
+                type="text" 
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+              />
             </div>
             <div className="lsItem">
               <label>Check-in Date</label>
@@ -57,13 +83,23 @@ const List = () => {
                   <span className="lsOptionText">
                     Min price <small>per night</small>
                   </span>
-                  <input type="number" onChange={e=>setMin(e.target.value)} className="lsOptionInput" />
+                  <input 
+                    type="number" 
+                    className="lsOptionInput" 
+                    value={min}
+                    onChange={(e) => setMin(e.target.value)}
+                  />
                 </div>
                 <div className="lsOptionItem">
                   <span className="lsOptionText">
                     Max price <small>per night</small>
                   </span>
-                  <input type="number" onChange={e=>setMax(e.target.value)} className="lsOptionInput" />
+                  <input 
+                    type="number" 
+                    className="lsOptionInput" 
+                    value={max}
+                    onChange={(e) => setMax(e.target.value)}
+                  />
                 </div>
                 <div className="lsOptionItem">
                   <span className="lsOptionText">Adult</span>
@@ -72,6 +108,8 @@ const List = () => {
                     min={1}
                     className="lsOptionInput"
                     placeholder={options.adult}
+                    value={options.adult}
+                    onChange={(e) => setOptions({...options, adult: parseInt(e.target.value)})}
                   />
                 </div>
                 <div className="lsOptionItem">
@@ -81,6 +119,8 @@ const List = () => {
                     min={0}
                     className="lsOptionInput"
                     placeholder={options.children}
+                    value={options.children}
+                    onChange={(e) => setOptions({...options, children: parseInt(e.target.value)})}
                   />
                 </div>
                 <div className="lsOptionItem">
@@ -90,6 +130,8 @@ const List = () => {
                     min={1}
                     className="lsOptionInput"
                     placeholder={options.room}
+                    value={options.room}
+                    onChange={(e) => setOptions({...options, room: parseInt(e.target.value)})}
                   />
                 </div>
               </div>
@@ -99,12 +141,12 @@ const List = () => {
           <div className="listResult">
             {loading ? (
               "Loading"
-            ):(
-               <>
-                {data.map((item)=>(
-                <SearchItem item={item} key={item._id} />
-            ))}
-            </>
+            ) : (
+              <>
+                {data.map((item) => (
+                  <SearchItem item={item} key={item._id} />
+                ))}
+              </>
             )}
           </div>
         </div>

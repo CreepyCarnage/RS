@@ -20,7 +20,21 @@ const RoomSchema = new mongoose.Schema({
         type: String,
 
     },
-    roomNumbers: [{number:Number, unavailableDates: { type: [Date] }}],
+    hotel: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hotel',
+        required: true
+      },
+    roomNumbers: [{
+        number: Number,
+        unavailableDates: { type: [Date] },
+        reservations: [{
+          bookingNumber: String,
+          startDate: Date,
+          endDate: Date
+        }]
+      }],
+    
 },
 {
     timestamps : true

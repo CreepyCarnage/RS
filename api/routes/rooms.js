@@ -1,6 +1,6 @@
 import express from "express";
 import { vAdmin } from "../utils/vToken.js";
-import { createRoom, deleteRoom, getRoom, getallRoom, updateRoom, updateRoomAvailability } from "../controllers/room.js";
+import { createRoom, deleteRoom, getRoom, getRoomAvailability, getallRoom, updateRoom, updateRoomAvailability } from "../controllers/room.js";
 
 const router = express.Router();
 
@@ -14,10 +14,13 @@ router.put("/availability/:id", updateRoomAvailability);
 //Delete the data
 router.delete("/:id",vAdmin, deleteRoom);
 
-//Get the data of specified hotel
+//Get the data of specified room
 router.get("/:id", getRoom);
 
 //Get all the data
 router.get("/", getallRoom);
+
+//Fetches the available rooms
+router.get("/availability/:hotelId", getRoomAvailability);
 
 export default router;

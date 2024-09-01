@@ -10,9 +10,10 @@ import axios from "axios";
 
 const Widget = ({ type }) => {
   const [count, setCount] = useState(0);
+  const [earnings, setEarnings] = useState(0);
 
   useEffect(() => {
-    const fetchCount = async () => {
+    const fetchData = async () => {
       try {
         let endpoint;
         switch (type) {
@@ -22,19 +23,27 @@ const Widget = ({ type }) => {
           case "order":
             endpoint = "/hotels/countHotel";
             break;
+          case "balance":
+            endpoint = "/reservations/count";
+            break;
+          case "earning":
+            endpoint = "/reservations/totalearnings";
+            break;
           default:
             return;
         }
         const response = await axios.get(endpoint, { withCredentials: true });
-        setCount(response.data.count);
+        if (type === "earning") {
+          setEarnings(response.data.totalEarnings);
+        } else {
+          setCount(response.data.count);
+        }
       } catch (error) {
-        console.error(`Failed to fetch ${type} count:`, error);
+        console.error(`Failed to fetch ${type} data:`, error);
       }
     };
 
-    if (type === "user" || type === "order") {
-      fetchCount();
-    }
+    fetchData();
   }, [type]);
 
   let data;
@@ -90,10 +99,10 @@ const Widget = ({ type }) => {
       break;
     case "balance":
       data = {
-        title: "ORDERS",
+        title: "RESERVATIONS",
         isMoney: false,
-        link: "/orders",
-        linkText: "View orders",
+        link: "/reservations",
+        linkText: "View reservations",
         icon: (
           <LocalShippingOutlinedIcon  
             className="icon"
@@ -114,7 +123,12 @@ const Widget = ({ type }) => {
       <div className="left">
         <span className="title">{data.title}</span>
         <span className="counter">
-          {data.isMoney && "₹"} {(type === "user" || type === "order") ? count : 100}
+          {data.isMoney && "₹"} 
+          {type === "earning" 
+            ? earnings.toFixed(2) 
+            : (type === "user" || type === "order" || type === "balance") 
+              ? count 
+              : 0}
         </span>
         <Link to={data.link} className="link" style={{color:"inherit", textDecoration: "none" }}>
           {data.linkText}

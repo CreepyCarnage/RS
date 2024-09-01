@@ -1,17 +1,32 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons"
 import useFetch from "../hooks/useFetch"
-import { useContext, useState } from "react"
+import { useContext, useState, useEffect } from "react"
 import { SearchContext } from "../../context/SearchContext"
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./reserve.css"
 
 const Reserve = ({setOpen, hotelId}) => {
     const [selectedRooms, setSelectedRooms] = useState([]);
     const {data, loading, error } = useFetch(`/hotels/room/${hotelId}`)
-    const {dates} = useContext(SearchContext);
+    const {dates, options} = useContext(SearchContext);
+    const [roomAvailability, setRoomAvailability] = useState([]);
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchRoomAvailability = async () => {
+            try {
+                const response = await axios.get(`/rooms/availability/${hotelId}`);
+                setRoomAvailability(response.data);
+            } catch (error) {
+                console.error("Error fetching room availability:", error);
+            }
+        };
+
+        fetchRoomAvailability();
+    }, [hotelId]);
 
     const getDateInRange = (startDate, endDate) => {
         const start = new Date(startDate)
@@ -34,7 +49,15 @@ const Reserve = ({setOpen, hotelId}) => {
             alldates.includes(new Date(date).getTime())
         );
 
-        return !isFound
+        const isReserved = roomAvailability.some(room => 
+            room.number === roomNumber.number && 
+            room.reservations.some(reservation => 
+                new Date(reservation.startDate) <= new Date(dates[0].endDate) &&
+                new Date(reservation.endDate) >= new Date(dates[0].startDate)
+            )
+        );
+
+        return !isFound && !isReserved;
     }
     
     const handleSelect = (e) => {
@@ -42,53 +65,40 @@ const Reserve = ({setOpen, hotelId}) => {
         const value = e.target.value;
         const [roomId, roomNumberId, actualRoomNumber] = value.split(',');
         
-        setSelectedRooms(prevSelectedRooms => {
-          if (checked) {
-            // Check if the roomId already exists
-            const existingRoomIndex = prevSelectedRooms.findIndex(room => room.roomId === roomId);
-            
-            if (existingRoomIndex !== -1) {
-              // If roomId exists, add the new room number to the existing entry
-              const updatedRoom = {
-                ...prevSelectedRooms[existingRoomIndex],
-                roomNumbers: [...prevSelectedRooms[existingRoomIndex].roomNumbers, parseInt(actualRoomNumber, 10)]
-              };
-              return [
-                ...prevSelectedRooms.slice(0, existingRoomIndex),
-                updatedRoom,
-                ...prevSelectedRooms.slice(existingRoomIndex + 1)
-              ];
+        setSelectedRooms(prev => {
+            if (checked) {
+                if (prev.length >= options.room) {
+                    alert(`You can only select ${options.room} room(s) based on your search criteria.`);
+                    e.target.checked = false;
+                    return prev;
+                }
+                return [...prev, { roomId, roomNumberId, actualRoomNumber }];
             } else {
-              // If roomId doesn't exist, create a new entry
-              return [...prevSelectedRooms, { roomId, roomNumbers: [parseInt(actualRoomNumber, 10)] }];
+                return prev.filter(item => item.roomNumberId !== roomNumberId);
             }
-          } else {
-            // If unchecked, remove the room number from the roomId
-            return prevSelectedRooms.map(room => {
-              if (room.roomId === roomId) {
-                return {
-                  ...room,
-                  roomNumbers: room.roomNumbers.filter(num => num !== parseInt(actualRoomNumber, 10))
-                };
-              }
-              return room;
-            }).filter(room => room.roomNumbers.length > 0); // Remove entries with no room numbers
-          }
         });
-      };
+    };
 
-  const handleClick = () => {
-    navigate("/payment", { 
-      state: { 
-        selectedRooms,
-        hotelId,
-        dates: {
-            startDate: dates[0].startDate,
-            endDate: dates[0].endDate
-          },
-      } 
-    });
-  };
+    const handleClick = () => {
+        if (selectedRooms.length === 0) {
+            alert("Please select at least one room before reserving.");
+            return;
+        }
+        if (selectedRooms.length !== options.room) {
+            alert(`Please select exactly ${options.room} room(s) based on your search criteria.`);
+            return;
+        }
+        navigate("/payment", { 
+            state: { 
+                selectedRooms,
+                hotelId,
+                dates: {
+                    startDate: dates[0].startDate,
+                    endDate: dates[0].endDate
+                },
+            } 
+        });
+    };
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error.message}</div>;
@@ -102,6 +112,7 @@ const Reserve = ({setOpen, hotelId}) => {
                     onClick={() => setOpen(false)}
                 />
                 <span>Select your Rooms: </span>
+                <p>You need to select {options.room} room(s) based on your search criteria.</p>
                 {data.map((item) => (
                     <div className="rItem" key={item._id}>
                         <div className="rItemInfo">
@@ -120,14 +131,20 @@ const Reserve = ({setOpen, hotelId}) => {
                                         type="checkbox" 
                                         value={`${item._id},${roomNumber._id},${roomNumber.number}`} 
                                         onChange={handleSelect}
-                                        disabled={!isAvailable(roomNumber)} 
+                                        disabled={!isAvailable(roomNumber) || (selectedRooms.length >= options.room && !selectedRooms.some(r => r.roomNumberId === roomNumber._id))}
                                     />
                                 </div>
                             ))}
                         </div>
                     </div>
                 ))}
-                <button className="rButton" onClick={handleClick}>Reserve Now</button>
+                <button 
+                    className="rButton" 
+                    onClick={handleClick} 
+                    disabled={selectedRooms.length !== options.room}
+                >
+                    Reserve Now
+                </button>
             </div>
         </div>
     );

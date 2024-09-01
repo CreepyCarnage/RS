@@ -1,21 +1,19 @@
 import Room from "../models/Room.js";
 import Hotel from "../models/Hotel.js";
-import mongoose from "mongoose";
 
 //Create Room
 export const createRoom = async (req, res, next) => {
   const hotelId = req.params.hotelid;
-  const newRoom = new Room(req.body);
+  const newRoom = new Room({
+    ...req.body,
+    hotel: hotelId
+  });
 
   try {
     const savedRoom = await newRoom.save();
-    try {
-      await Hotel.findByIdAndUpdate(hotelId, {
-        $push: { rooms: savedRoom._id },
-      });
-    } catch (err) {
-      next(err);
-    }
+    await Hotel.findByIdAndUpdate(hotelId, {
+      $push: { rooms: savedRoom._id },
+    });
     res.status(200).json(savedRoom);
   } catch (err) {
     next(err);
@@ -36,41 +34,31 @@ export const updateRoom = async (req, res, next) => {
   }
 };
 
+//Updates Avalaibility of room(Disables them after booking)
 export const updateRoomAvailability = async (req, res, next) => {
-  console.log('Received request to update room availability');
-  console.log('Room ID:', req.params.id);
-  console.log('Request body:', req.body);
   try {
-    const roomId = req.params.id; // This is the room ID
     const { roomNumber, dates, bookingNumber } = req.body;
-
-    console.log('Updating room availability:', { roomId, roomNumber, dates, bookingNumber });
-
-    if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
-      console.log('Invalid room ID:', roomId);
-      return res.status(400).json({ message: "Invalid room ID" });
-    }
-
-    if (!roomNumber) {
-      console.log('Missing room number');
-      return res.status(400).json({ message: "Room number is required" });
-    }
-
-    if (!bookingNumber) {
-      console.log('Missing booking number');
-      return res.status(400).json({ message: "Booking number is required" });
-    }
-
     const startDate = new Date(dates[0]);
     const endDate = new Date(dates[1]);
 
-    const room = await Room.findById(req.params.id);
-    if (!room) {
-      return res.status(404).json({ message: "Room not found" });
+    const result = await Room.updateOne(
+      { 
+        _id: req.params.id,
+        "roomNumbers.number": roomNumber
+      },
+      {
+        $push: {
+          "roomNumbers.$.unavailableDates": { $each: getDatesInRange(startDate, endDate) },
+          "roomNumbers.$.reservations": { bookingNumber, startDate, endDate }
+        }
+      }
+    );
+
+    if (result.nModified === 0) {
+      return res.status(404).json({ message: "Room not found or not updated" });
     }
 
-    console.log('Room availability updated:', room);
-    res.status(200).json(room);
+    res.status(200).json({ message: "Room availability updated successfully" });
   } catch (err) {
     console.error("Error updating room availability:", err);
     res.status(500).json({ message: err.message });
@@ -78,14 +66,12 @@ export const updateRoomAvailability = async (req, res, next) => {
 };
 
 function getDatesInRange(startDate, endDate) {
-  const date = new Date(startDate.getTime());
   const dates = [];
-
-  while (date <= endDate) {
-    dates.push(new Date(date));
-    date.setDate(date.getDate() + 1);
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
   }
-
   return dates;
 }
 
@@ -93,8 +79,22 @@ function getDatesInRange(startDate, endDate) {
 //Delete Room
 export const deleteRoom = async (req, res, next) => {
   try {
-    await Room.findByIdAndDelete(req.params.id);
-    res.status(200).json("Room Data is deleted");
+    const roomId = req.params.id;
+    const room = await Room.findById(roomId);
+    
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    // Remove the room from the associated hotel
+    await Hotel.findByIdAndUpdate(room.hotel, {
+      $pull: { rooms: roomId }
+    });
+
+    // Delete the room
+    await Room.findByIdAndDelete(roomId);
+
+    res.status(200).json({ message: "Room has been deleted and removed from the hotel" });
   } catch (err) {
     next(err);
   }
@@ -113,8 +113,36 @@ export const getRoom = async (req, res, next) => {
 //Get All Rooms
 export const getallRoom = async (req, res, next) => {
   try {
-    const getroom = await Room.find();
-    res.status(200).json(getroom);
+    const hotelId = req.query.hotelId;
+    const query = hotelId ? { hotel: hotelId } : {};
+    const rooms = await Room.find(query);
+    res.status(200).json(rooms);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+//Fetches the available rooms
+export const getRoomAvailability = async (req, res, next) => {
+  try {
+    const hotelId = req.params.hotelId;
+    const room = await Room.find({"hotelId": hotelId});
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+ 
+    const roomAvailability = room.map(room => ({
+      roomId: room._id,
+      roomNumbers: room.roomNumbers.map(rn => ({
+      number: rn.number,
+      unavailableDates: rn.unavailableDates,
+      reservations: rn.reservations
+    }))
+    }));
+
+    res.status(200).json(roomAvailability);
   } catch (err) {
     next(err);
   }
