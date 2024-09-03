@@ -9,7 +9,7 @@ import "./reserve.css"
 
 const Reserve = ({setOpen, hotelId}) => {
     const [selectedRooms, setSelectedRooms] = useState([]);
-    const {data, loading, error } = useFetch(`/hotels/room/${hotelId}`)
+    const {data, loading, error } = useFetch(`/hotels/room/${hotelId}`);
     const {dates, options} = useContext(SearchContext);
     const [roomAvailability, setRoomAvailability] = useState([]);
 
@@ -113,16 +113,16 @@ const Reserve = ({setOpen, hotelId}) => {
                 />
                 <span>Select your Rooms: </span>
                 <p>You need to select {options.room} room(s) based on your search criteria.</p>
-                {data.map((item) => (
-                    <div className="rItem" key={item._id}>
-                        <div className="rItemInfo">
-                            <div className="rTitle">{item.title}</div>
-                            <div className="rDesc">{item.desc}</div>
-                            <div className="rMax">
-                                Max people: <b>{item.maxPeople}</b>
-                            </div>
-                            <div className="rPrice">{item.price}</div>
-                        </div>
+                {data.map((item) => item && (
+     <div className="rItem" key={item._id}>
+     <div className="rItemInfo">
+         <div className="rTitle">{item.title || 'No title'}</div>
+         <div className="rDesc">{item.description || 'No description'}</div>
+         <div className="rMax">
+             Max people: <b>{item.maxPeople || 'N/A'}</b>
+         </div>
+         <div className="rPrice">{item.price || 'Price not available'}</div>
+     </div>
                         <div className="rSelectRooms">
                             {item.roomNumbers.map((roomNumber) => (
                                 <div className="room" key={roomNumber._id}>

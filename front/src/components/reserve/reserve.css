@@ -12,8 +12,12 @@
 
 .rContainer {
     background-color: white;
-    padding: 20px;
+    padding: 30px;
     position: relative;
+    max-width: 800px;
+    margin: 50px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
 
 }
 
@@ -27,12 +31,14 @@
 
 .rItem{
     display: flex;
-    align-items: center;
-    gap: 50px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
     padding: 20px;
 }
 
-.rInfo {
+.rItemInfo {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -57,15 +63,19 @@
 .rSelectRooms{
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    font-size: 10px;
-    
+    gap: 10px;
+    font-size: 12px;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 1;
 }
 
 .room{
     display: flex;
     flex-direction: column;
+    margin-right: 5px;
 }
+
 
 .rButton {
     border: none;

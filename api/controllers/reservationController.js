@@ -1,4 +1,5 @@
 import Reservation from "../models/Reservation.js";
+import Room from "../models/Room.js";
 
 
 //Create Reservations
@@ -41,10 +42,38 @@ export const getAllReservations = async (req, res, next) => {
 //Delete Reservations
 export const deleteReservation = async (req, res, next) => {
   try {
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) {
+      return res.status(404).json("Reservation not found.");
+    }
+
+    // Update room availability for each room in the reservation
+    for (const reservedRoom of reservation.rooms) {
+      await Room.updateOne(
+        { 
+          _id: reservedRoom.roomId,
+          "roomNumbers.number": reservedRoom.roomNumber
+        },
+        {
+          $pull: {
+            "roomNumbers.$.unavailableDates": { 
+              $gte: reservation.startDate, 
+              $lte: reservation.endDate 
+            },
+            "roomNumbers.$.reservations": {
+              bookingNumber: reservation.bookingNumber
+            }
+          }
+        }
+      );
+    }
+
+    // Delete the reservation
     await Reservation.findByIdAndDelete(req.params.id);
-    res.status(200).json("Reservation has been deleted.");
+    res.status(200).json("Reservation has been deleted and room availability updated.");
   } catch (err) {
-    next(err);
+    console.error("Error deleting reservation:", err);
+    res.status(500).json({ message: "Error deleting reservation", error: err.message });
   }
 };
 
