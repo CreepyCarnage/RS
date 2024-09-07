@@ -36,25 +36,47 @@ export const deleteHotel = async (req, res, next) => {
 
 //Get specific Hotel
 export const getHotel = async (req, res, next) => {
-
-    try{
-        const hotel = await Hotel.findById(req.params.id);
-        res.status(200).json(hotel);
-    }   catch(err){
-        next(err);  
+    try {
+      const hotel = await Hotel.findById(req.params.id);
+      if (!hotel) {
+        return res.status(404).json({ message: "Hotel not found" });
+      }
+  
+      // Find the cheapest available room
+      const cheapestRoom = await Room.findOne({ hotel: hotel._id })
+        .sort({ price: 1 })
+        .select('price');
+  
+      const hotelData = hotel.toObject();
+      hotelData.cheapestPrice = cheapestRoom ? cheapestRoom.price : null;
+  
+      res.status(200).json(hotelData);
+    } catch (err) {
+      next(err);
     }
-}
+  };
 
 //Get All Hotels
 export const getallHotel = async (req, res, next) => {
     const { min, max, limit, ...others } = req.query;
-    try{
-        const gethotel = await Hotel.find({
+    try {
+        const hotels = await Hotel.find({
             ...others,
-            cheapestPrice: { $gt:min | 1, $lt:max || 9999999999},
         }).limit(parseInt(req.query.limit));
-        res.status(200).json(gethotel);
-    }   catch(err){
+
+        // Fetch cheapest room price for each hotel
+        const hotelsWithPrice = await Promise.all(hotels.map(async (hotel) => {
+            const cheapestRoom = await Room.findOne({ hotel: hotel._id })
+                .sort({ price: 1 })
+                .select('price');
+            
+            const hotelData = hotel.toObject();
+            hotelData.cheapestPrice = cheapestRoom ? cheapestRoom.price : null;
+            return hotelData;
+        }));
+
+        res.status(200).json(hotelsWithPrice);
+    } catch (err) {
         next(err);
     }
 }

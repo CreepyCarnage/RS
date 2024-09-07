@@ -14,6 +14,18 @@ export const createRoom = async (req, res, next) => {
     await Hotel.findByIdAndUpdate(hotelId, {
       $push: { rooms: savedRoom._id },
     });
+
+    // Update hotel's cheapest price
+    const cheapestRoom = await Room.findOne({ hotel: hotelId })
+      .sort({ price: 1 })
+      .select('price');
+    
+    if (cheapestRoom) {
+      await Hotel.findByIdAndUpdate(hotelId, {
+        cheapestPrice: cheapestRoom.price
+      });
+    }
+
     res.status(200).json(savedRoom);
   } catch (err) {
     next(err);
@@ -28,6 +40,18 @@ export const updateRoom = async (req, res, next) => {
       { $set: req.body },
       { new: true }
     );
+
+    // Update hotel's cheapest price if necessary
+    const cheapestRoom = await Room.findOne({ hotel: updatedRoom.hotel })
+      .sort({ price: 1 })
+      .select('price');
+    
+    if (cheapestRoom) {
+      await Hotel.findByIdAndUpdate(updatedRoom.hotel, {
+        cheapestPrice: cheapestRoom.price
+      });
+    }
+
     res.status(200).json(updatedRoom);
   } catch (err) {
     next(err);
@@ -93,6 +117,22 @@ export const deleteRoom = async (req, res, next) => {
 
     // Delete the room
     await Room.findByIdAndDelete(roomId);
+
+    // Update hotel's cheapest price
+    const cheapestRoom = await Room.findOne({ hotel: room.hotel })
+      .sort({ price: 1 })
+      .select('price');
+    
+    if (cheapestRoom) {
+      await Hotel.findByIdAndUpdate(room.hotel, {
+        cheapestPrice: cheapestRoom.price
+      });
+    } else {
+      // If no rooms left, set cheapestPrice to null
+      await Hotel.findByIdAndUpdate(room.hotel, {
+        cheapestPrice: null
+      });
+    }
 
     res.status(200).json({ message: "Room has been deleted and removed from the hotel" });
   } catch (err) {
