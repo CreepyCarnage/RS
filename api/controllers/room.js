@@ -153,8 +153,17 @@ export const getRoom = async (req, res, next) => {
 //Get All Rooms
 export const getallRoom = async (req, res, next) => {
   try {
-    const hotelId = req.query.hotelId;
-    const query = hotelId ? { hotel: hotelId } : {};
+    const { hotelId, adult } = req.query;
+    let query = {};
+
+    if (hotelId) {
+      query.hotel = hotelId;
+    }
+
+    if (adult) {
+      query.maxPeople = { $gte: parseInt(adult) };
+    }
+
     const rooms = await Room.find(query);
     res.status(200).json(rooms);
   } catch (err) {

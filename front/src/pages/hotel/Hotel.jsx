@@ -1,29 +1,27 @@
+import React, { useCallback, useContext, useState, useMemo, useEffect } from "react";
 import "./hotel.css";
 import Navbar from "../../components/navbar/Navbar";
 import MailList from "../../components/mailList/MailList";
 import Footer from "../../components/footer/Footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCircleArrowLeft,
-  faCircleArrowRight,
-  faCircleXmark,
-  faLocationDot,
-} from "@fortawesome/free-solid-svg-icons";
-import { useCallback, useContext, useState, useMemo } from "react";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import useFetch from "../../components/hooks/useFetch";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SearchContext } from "../../context/SearchContext";
 import { AuthContext } from "../../context/AuthContext";
 import Reserve from "../../components/reserve/Reserve";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const Hotel = () => {
   const location = useLocation();
   const id = location.pathname.split("/")[2];
-  const [slideNumber, setSlideNumber] = useState(0);
-  const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [selectedRoomsPrice, setSelectedRoomsPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const { data, loading, error } = useFetch(`/hotels/find/${id}`);
   const { user } = useContext(AuthContext);
@@ -43,20 +41,13 @@ const Hotel = () => {
     return 0;
   }, [dates, dayDifference]);
 
-  const handleOpen = useCallback((i) => {
-    setSlideNumber(i);
-    setOpen(true);
-  }, []);
-
-  const handleMove = useCallback((direction) => {
-    if (!data?.photos) return;
-    setSlideNumber((prev) => {
-      if (direction === "l") {
-        return (prev - 1 + data.photos.length) % data.photos.length;
-      }
-      return (prev + 1) % data.photos.length;
-    });
-  }, [data?.photos]);
+  useEffect(() => {
+    if (selectedRoomsPrice > 0) {
+      setTotalPrice(selectedRoomsPrice * days);
+    } else if (data?.cheapestPrice) {
+      setTotalPrice(data.cheapestPrice * days * (options?.room || 1));
+    }
+  }, [selectedRoomsPrice, days, data?.cheapestPrice, options?.room]);
 
   const handleClick = useCallback(() => {
     if (user) {
@@ -66,6 +57,16 @@ const Hotel = () => {
     }
   }, [user, navigate]);
 
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>No data available</div>;
@@ -74,32 +75,6 @@ const Hotel = () => {
     <div>
       <Navbar />     
       <div className="hotelContainer">
-        {open && data.photos && data.photos.length > 0 && (
-          <div className="slider">
-            <FontAwesomeIcon
-              icon={faCircleXmark}
-              className="close"
-              onClick={() => setOpen(false)}
-            />
-            <FontAwesomeIcon
-              icon={faCircleArrowLeft}
-              className="arrow left"
-              onClick={() => handleMove("l")}
-            />
-            <div className="hotelImgWrapper">
-              <img 
-                src={data.photos[slideNumber]} 
-                alt="" 
-                className="hotelImg" 
-              />
-            </div>
-            <FontAwesomeIcon
-              icon={faCircleArrowRight}
-              className="arrow right"
-              onClick={() => handleMove("r")}
-            />
-          </div>
-        )}
         <div className="hotelWrapper">
           <button className="bookNow" onClick={handleClick}>Reserve or Book Now!</button>
           <h1 className="hotelTitle">{data.name}</h1>
@@ -114,16 +89,13 @@ const Hotel = () => {
             Book a stay over ₹{data.cheapestPrice || 'N/A'} at this property and get a free airport taxi
           </span>
           <div className="hotelImages">
-            {data.photos?.map((photo, i) => (
-              <div className="hotelImgWrapper" key={i}>
-                <img
-                  onClick={() => handleOpen(i)}
-                  src={photo}
-                  alt=""
-                  className="hotelImg"
-                />
-              </div>
-            ))}
+            <Slider {...settings}>
+              {data.photos?.map((photo, i) => (
+                <div key={i}>
+                  <img src={photo} alt="" className="hotelImg" />
+                </div>
+              ))}
+            </Slider>
           </div>
           <div className="hotelDetails">
             <div className="hotelDetailsTexts">
@@ -134,7 +106,7 @@ const Hotel = () => {
               <h1>Perfect for a {days}-night stay!</h1>
               <span>Enjoy the luxury and lavish environment</span>
               <h2>
-              <b>₹{days * (data?.cheapestPrice || 0) * (options?.room || 1)}</b> ({days} nights)
+                <b>₹{totalPrice}</b> ({days} nights)
               </h2>
               <button onClick={handleClick}>Reserve or Book Now!</button>
             </div>
@@ -143,7 +115,7 @@ const Hotel = () => {
         <MailList />
         <Footer />
       </div>
-      {openModal && <Reserve setOpen={setOpenModal} hotelId={id} />}
+      {openModal && <Reserve setOpen={setOpenModal} hotelId={id} setSelectedRoomsPrice={setSelectedRoomsPrice} />}
     </div>
   );
 };
