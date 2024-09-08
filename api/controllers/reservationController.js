@@ -94,3 +94,18 @@ export const getTotalEarnings = async (req, res, next) => {
     next(err);
   }
 };
+
+
+// Get reservation made by user
+export const getUserReservations = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const reservations = await Reservation.find({ userId: userId })
+      .populate('hotelId', 'name')
+      .sort({ createdAt: -1 });
+    res.status(200).json(reservations);
+  } catch (err) {
+    next(err);
+  }
+};
+

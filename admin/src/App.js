@@ -15,6 +15,10 @@ import NewRoom from "./pages/newRoom/NewRoom";
 import Register from "./pages/register/Register";
 import ForgotPassword from "./pages/forgot/ForgotPassword";
 import Earnings from "./pages/Earnings/Earnings";
+import UserView from "./pages/view/UserView";
+import HotelView from "./pages/view/HotelView";
+import RoomView from "./pages/view/RoomView";
+import ReservationView from "./pages/view/ReservationView";
 
 function App() {
   const { darkMode } = useContext(DarkModeContext);
@@ -46,7 +50,7 @@ function App() {
               <Route index element={<ProtectedRoute>
                 <List columns={userColumns}/>
                 </ProtectedRoute>} />
-              <Route path=":userId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
+              <Route path=":userId" element={<ProtectedRoute><UserView /></ProtectedRoute>} />
               <Route
                 path="new"
                 element={<ProtectedRoute><New inputs={userInputs} title="Add New User" /></ProtectedRoute>}
@@ -54,7 +58,7 @@ function App() {
             </Route>
             <Route path="hotels">
               <Route index element={<ProtectedRoute><List columns={hotelColumns}/></ProtectedRoute>} />
-              <Route path=":productId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
+              <Route path=":productId" element={<ProtectedRoute><HotelView /></ProtectedRoute>} />
               <Route
                 path="new"
                 element={<ProtectedRoute><NewHotel /></ProtectedRoute>}
@@ -72,7 +76,7 @@ function App() {
 
             <Route path="reservations">
             <Route index element={<ProtectedRoute><List columns={reservationColumns}/></ProtectedRoute>} />
-            <Route path=":productId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
+            <Route path=":productId" element={<ProtectedRoute><ReservationView /></ProtectedRoute>} />
               
             </Route>
             <Route path="earnings" element={

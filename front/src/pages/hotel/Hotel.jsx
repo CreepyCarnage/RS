@@ -106,7 +106,8 @@ const Hotel = () => {
               <h1>Perfect for a {days}-night stay!</h1>
               <span>Enjoy the luxury and lavish environment</span>
               <h2>
-                <b>₹{totalPrice}</b> ({days} nights)
+                
+                 ({days} nights)
               </h2>
               <button onClick={handleClick}>Reserve or Book Now!</button>
             </div>

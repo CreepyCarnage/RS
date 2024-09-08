@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import './PaymentPage.scss';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -6,7 +6,7 @@ import axios from 'axios';
 import { simulatePayment, generateBookingNumber } from '../../utils/paymentUtils';
 
 const PaymentPage = () => {
-  const [paymentMethod, setPaymentMethod] = useState('credit-card');
+  const [paymentMethod, setPaymentMethod] = useState('debit-card');
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [upiId, setUpiId] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -20,6 +20,23 @@ const PaymentPage = () => {
 
   const { selectedRooms, hotelId, dates } = location.state || {};
 
+  const nights = useMemo(() => {
+    if (!dates) return 0;
+    const start = new Date(dates.startDate);
+    const end = new Date(dates.endDate);
+    return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  }, [dates]);
+
+  const { nightlyCost, totalAmount } = useMemo(() => {
+    if (!selectedRooms || selectedRooms.length === 0) return { nightlyCost: 0, totalAmount: 0 };
+    const nightly = selectedRooms.reduce((total, room) => total + room.price, 0);
+    return {
+      nightlyCost: nightly,
+      totalAmount: nightly * nights
+    };
+  }, [selectedRooms, nights]);
+
+
   useEffect(() => {
     if (!selectedRooms || selectedRooms.length === 0) {
       setError("No rooms selected. Please go back and select rooms.");
@@ -31,7 +48,7 @@ const PaymentPage = () => {
   };
 
   const validateForm = () => {
-    if (paymentMethod === 'credit-card') {
+    if (paymentMethod === 'debit-card') {
       if (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv || !cardDetails.name) {
         setError('Please fill in all credit card details');
         return false;
@@ -57,8 +74,6 @@ const PaymentPage = () => {
     setError('');
   
     try {
-      const totalAmount = 1000; // Replace with actual calculation
-  
       let paymentResult;
       if (paymentMethod !== 'cash') {
         paymentResult = await simulatePayment(paymentMethod, totalAmount);
@@ -67,7 +82,6 @@ const PaymentPage = () => {
       }
   
       if (paymentResult.success) {
-        // Ensure dates are properly formatted
         const startDate = new Date(dates.startDate).toISOString();
         const endDate = new Date(dates.endDate).toISOString();
   
@@ -76,7 +90,7 @@ const PaymentPage = () => {
           roomNumber: parseInt(room.actualRoomNumber, 10)
         }));
   
-        console.log('Sending reservation data:', {
+        const reservationData = {
           userId: user._id,
           hotelId,
           rooms,
@@ -86,41 +100,18 @@ const PaymentPage = () => {
           paymentMethod,
           totalAmount,
           transactionId: paymentResult.transactionId || 'cash_payment'
-        });
+        };
   
-        const reservationResponse = await axios.post('/reservations/create', {
-          userId: user._id,
-          hotelId,
-          rooms,
-          startDate,
-          endDate,
-          bookingNumber: newBookingNumber,
-          paymentMethod,
-          totalAmount,
-          transactionId: paymentResult.transactionId || 'cash_payment'
-        });
+        const reservationResponse = await axios.post('/reservations/create', reservationData);
   
         if (reservationResponse.status === 200) {
-          console.log("Selected Rooms:", selectedRooms);
-          console.log("Rooms to update:", rooms);
-
-          if (!rooms || rooms.length === 0) {
-            console.error("No rooms selected for reservation");
-            setError("Please select at least one room before confirming.");
-            return;
-          }
-          
-          await Promise.all(rooms.map((room) => {
-            if (!room || !room.roomId) {
-              console.error("Invalid room data:", room);
-              throw new Error("Invalid room data");
-            }
-            return axios.put(`/rooms/availability/${room.roomId}`, {
+          await Promise.all(rooms.map((room) => 
+            axios.put(`/rooms/availability/${room.roomId}`, {
               roomNumber: room.roomNumber,
               dates: [startDate, endDate],
               bookingNumber: newBookingNumber
-            });
-          }));
+            })
+          ));
   
           setIsSubmitted(true);
         } else {
@@ -159,17 +150,22 @@ const PaymentPage = () => {
   }
 
   return (
-    <div className="container payment-contain">
+    <div className="payment-contain">
       <div className="card payment-card">
         <div className="card-body">
           <h2 className="card-title payment-title">Payment Details</h2>
           <p className="card-text payment-subtitle">Please select your payment method and enter the required information.</p>
           
+          <div className="total-amount">
+            <h3>Total Amount: ₹{totalAmount}</h3>
+            <p>₹{nightlyCost} per night for {nights} night(s)</p>
+          </div>
+
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           
           <form onSubmit={handleSubmit}>
             <div className="mb-4 payment-methods">
-              {['credit-card', 'upi', 'cash'].map((method) => (
+              {['debit-card', 'upi', 'cash'].map((method) => (
                 <div className="form-check payment-method" key={method}>
                   <input
                     className="form-check-input"
@@ -188,8 +184,8 @@ const PaymentPage = () => {
               ))}
             </div>
 
-            {paymentMethod === 'credit-card' && (
-              <div className="credit-card-form">
+            {paymentMethod === 'debit-card' && (
+              <div className="debit-card-form">
                 {['name', 'number', 'expiry', 'cvv'].map((field) => (
                   <div className={`mb-3 ${field === 'expiry' || field === 'cvv' ? 'col-md-6' : ''}`} key={field}>
                     <label htmlFor={field} className="form-label">
@@ -220,7 +216,7 @@ const PaymentPage = () => {
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
                   required
-                  aria-label="Enter UPI ID"
+                  placeholder="Enter UPI ID"
                 />
               </div>
             )}
