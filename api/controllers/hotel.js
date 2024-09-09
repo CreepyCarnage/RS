@@ -37,8 +37,10 @@ export const deleteHotel = async (req, res, next) => {
 //Get specific Hotel
 export const getHotel = async (req, res, next) => {
     try {
+      console.log("Received request for hotel with ID:", req.params.id);
       const hotel = await Hotel.findById(req.params.id);
       if (!hotel) {
+        console.log("Hotel not found for ID:", req.params.id);
         return res.status(404).json({ message: "Hotel not found" });
       }
   
@@ -52,8 +54,9 @@ export const getHotel = async (req, res, next) => {
   
       res.status(200).json(hotelData);
     } catch (err) {
-      next(err);
-    }
+        console.error("Error in getHotel:", err);
+        next(err);
+      }
   };
 
 //Get All Hotels

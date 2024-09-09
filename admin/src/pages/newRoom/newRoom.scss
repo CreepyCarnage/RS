@@ -61,14 +61,21 @@
           }
 
           button {
-            width: 150px;
-            padding: 10px;
+            margin-top: 20px;
+            padding: 8px 16px;
             border: none;
-            background-color: teal;
+            background-color: black;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            border-radius: 5px;
+            max-width: max-content;
+            transition: 0.5s;
+      
+            &:hover {
+                background-color: #ca9819;
+                transform: translateY(-2px);
+            }
           }
         }
       }

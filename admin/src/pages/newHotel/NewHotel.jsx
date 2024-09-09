@@ -70,16 +70,26 @@ const NewHotel = () => {
           <h1>Add New Hotel</h1>
         </div>
         <div className="bottom">
-          <div className="left">
-            <img
-              src={
-                files.length
-                  ? URL.createObjectURL(files[0])
-                  : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
-              }
-              alt=""
-            />
-          </div>
+<div className="left">
+  <div className="imagePreviewContainer">
+    {files.length > 0 ? (
+      Array.from(files).map((file, index) => (
+        <img
+          key={index}
+          src={URL.createObjectURL(file)}
+          alt={`Preview ${index + 1}`}
+          className="previewImage"
+        />
+      ))
+    ) : (
+      <img
+        src="https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
+        alt="No pic"
+        className="previewImage"
+      />
+    )}
+  </div>
+</div>
           <div className="right">
             <form onSubmit={handleSubmit}>
               <div className="formInput">

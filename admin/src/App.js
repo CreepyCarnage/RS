@@ -1,7 +1,6 @@
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import List from "./pages/list/List";
-import Single from "./pages/single/Single";
 import New from "./pages/new/New";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { userInputs } from "./formSource";
@@ -58,7 +57,7 @@ function App() {
             </Route>
             <Route path="hotels">
               <Route index element={<ProtectedRoute><List columns={hotelColumns}/></ProtectedRoute>} />
-              <Route path=":productId" element={<ProtectedRoute><HotelView /></ProtectedRoute>} />
+              <Route path=":hotelId" element={<ProtectedRoute><HotelView /></ProtectedRoute>} />
               <Route
                 path="new"
                 element={<ProtectedRoute><NewHotel /></ProtectedRoute>}
@@ -67,7 +66,7 @@ function App() {
 
             <Route path="rooms">
               <Route index element={<ProtectedRoute><List columns={roomColumns}/></ProtectedRoute>} />
-              <Route path=":productId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
+              <Route path=":roomId" element={<ProtectedRoute><RoomView /></ProtectedRoute>} />
               <Route
                 path="new"
                 element={<ProtectedRoute><NewRoom /></ProtectedRoute>}
@@ -76,7 +75,7 @@ function App() {
 
             <Route path="reservations">
             <Route index element={<ProtectedRoute><List columns={reservationColumns}/></ProtectedRoute>} />
-            <Route path=":productId" element={<ProtectedRoute><ReservationView /></ProtectedRoute>} />
+            <Route path=":reservationId" element={<ProtectedRoute><ReservationView /></ProtectedRoute>} />
               
             </Route>
             <Route path="earnings" element={

@@ -1,0 +1,62 @@
+.single {
+    display: flex;
+    width: 100%;
+
+    .singleContainer {
+        flex: 6;
+      }
+
+.reservationView {
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+
+
+    .title {
+      font-size: 24px;
+      color: gray;
+      margin-bottom: 20px;
+    }
+  
+    .reservationDetails {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 15px -10px rgba(0, 0, 0, 0.75);
+    
+        .detailItem {
+          margin-bottom: 10px;
+          font-size: 14px;
+    
+          .itemKey {
+            font-weight: bold;
+            color: gray;
+            margin-right: 5px;
+          }
+  
+        .itemValue {
+         font-size: 16px;   
+        }
+    }
+  
+    .deleteButton {
+        margin-top: 20px;
+        padding: 10px;
+        border: none;
+        background-color: black;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px;
+        max-width: fit-content;
+  
+        &:hover {
+          background-color: #ca9819;
+          transform: translateY(-2px);
+          transition: 0.5s ;
+          
+        }
+      }
+    }
+  }
+}

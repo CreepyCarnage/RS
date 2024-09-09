@@ -1,3 +1,5 @@
+import countries from './context/countries'; 
+
 export const userInputs = [
     {
       id: "username",
@@ -30,15 +32,16 @@ export const userInputs = [
     },
     {
       id: "address",
-      label: "address",
+      label: "Address",
       type: "text",
       placeholder: "Delhi",
     },
     {
-      id: "country",
-      label: "Country",
-      type: "text",
-      placeholder: "India",
+    id: "country",
+    label: "Country",
+    type: "select",
+    options: countries.map(country => ({ value: country, label: country })),
+    placeholder: "Select a country",
     }
   ];
   
@@ -87,12 +90,6 @@ export const userInputs = [
       label: "Title",
       type: "text",
       placeholder: "Best Hotel",
-    },
-    {
-      id: "cheapestPrice",
-      label: "Price",
-      type: "text",
-      placeholder: "100",
     }
   ];
   

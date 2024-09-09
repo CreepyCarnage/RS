@@ -1,0 +1,216 @@
+.single {
+  display: flex;
+  width: 100%;
+  
+  .singleContainer {
+    flex: 6;
+  }
+
+.hotelView {
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .hotelInfo {
+      flex: 1;
+      -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+      box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+      padding: 25px;
+      position: relative;
+    margin-bottom: 30px;
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .infoGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit);
+      gap: 8px;  
+
+    p {
+      margin: 0;
+      font-size: 16px;
+      color: #555;
+
+      strong {
+        color: #333;
+      }
+    }
+  }
+
+.description {
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+}
+
+        input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      color:#555
+    }
+ 
+        textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      color:#555;
+      height: 300px;
+    }
+
+    input:focus {
+      border-color: #ca9819;
+      outline: none;
+    }
+  }
+
+  .actionButtons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      max-width: fit-content;
+      transition: 0.5s;
+    }
+    button:hover{
+      background-color: #ca9819;
+      transform: translateY(-2px);
+    }
+  }
+
+
+.hotelReservations {
+  -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+  box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+  padding: 20px;
+  margin: 10px 20px;
+  h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 20px;
+    }
+
+  .status {
+      padding: 5px;
+      border-radius: 5px;
+  
+      &.confirmed {
+        color: green;
+        background-color: rgba(0, 128, 0, 0.151);
+      }
+      &.Pending {
+        color: goldenrod;
+        background-color: rgba(189, 189, 3, 0.103);
+      }
+    }
+  
+
+  .noReservations {
+    text-align: center;
+    font-style: italic;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+}
+
+@media (max-width: 768px) {
+.userView {
+  padding: 20px;
+
+  .userInfo {
+    padding: 20px;
+
+    h1 {
+      font-size: 20px;
+    }
+
+    .infoGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .hotelReservations {
+      h2 {
+          font-size: 18px;
+        }
+
+    table {
+      th, td {
+        padding: 10px;
+      }
+    }
+  }
+}
+}
+}
+
+.photoManagement {
+  margin-top: 20px;
+
+  .photoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+
+    .photoItem {
+      position: relative;
+
+      img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      button {
+        position: absolute;
+        top: 5px;
+        right: 0.1px;
+        background: rgb(255, 48, 48);
+        color: white;
+        border: none;
+        padding: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: red;
+        transform: translateY(-2px);
+        transition: 0.3s;
+      }
+    }
+  }
+
+  input[type="file"] {
+    margin-top: 10px;
+  }
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+
+  img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+}

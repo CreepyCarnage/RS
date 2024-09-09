@@ -65,7 +65,7 @@
     transition: border-color 0.2s;
   }
   
-  input:focus {
+  input:focus,input:hover {
     border-color: #ca9819;
     outline: none;
   }

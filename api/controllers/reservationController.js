@@ -15,6 +15,7 @@ export const createReservation = async (req, res, next) => {
   }
 };
 
+//Get Reservation Count
 export const getReservationCount = async (req, res, next) => {
   try {
     const count = await Reservation.countDocuments();
@@ -24,6 +25,22 @@ export const getReservationCount = async (req, res, next) => {
   }
 };
 
+// Get a single reservation
+export const getReservation = async (req, res, next) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id)
+      .populate('userId', 'username email')
+      .populate('hotelId', 'name');
+    
+    if (!reservation) {
+      return res.status(404).json({ message: "Reservation not found" });
+    }
+    
+    res.status(200).json(reservation);
+  } catch (err) {
+    next(err);
+  }
+};
 
 // Get all reservations
 export const getAllReservations = async (req, res, next) => {
@@ -109,3 +126,18 @@ export const getUserReservations = async (req, res, next) => {
   }
 };
 
+
+export const getHotelReservations = async (req, res, next) => {
+  try {
+    const hotelId = req.params.hotelId;
+    const reservations = await Reservation.find({ hotelId: hotelId })
+      .populate('userId', 'username email')
+      .populate('hotelId', 'name')
+      .sort({ createdAt: -1 });
+
+    console.log(`Found ${reservations.length} reservations for hotel ${hotelId}`);
+    res.status(200).json(reservations);
+  } catch (err) {
+    next(err);
+  }
+};

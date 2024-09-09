@@ -9,14 +9,30 @@ const Datatable = ({ columns }) => {
   const location = useLocation();
   const path = location.pathname.split("/")[1];
   const [list, setList] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data } = useFetch(`/${path}`);
 
   useEffect(() => {
     if (data) {
       setList(data);
+      setFilteredList(data);
     }
   }, [data]);
+
+  useEffect(() => {
+    const filteredData = list.filter((item) =>
+      columns.some((column) => {
+        if (typeof item[column.field] === 'string') {
+          return item[column.field].toLowerCase().includes(searchTerm.toLowerCase());
+        }
+        
+        return false;
+      })
+    );
+    setFilteredList(filteredData);
+  }, [searchTerm, list, columns]);
 
   const handleDelete = async (id) => {
     try {
@@ -32,6 +48,10 @@ const Datatable = ({ columns }) => {
       console.error("Error deleting item:", err);
       alert("Failed to delete. Please try again.");
     }
+  };
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
   const actionColumn = [
@@ -67,9 +87,17 @@ const Datatable = ({ columns }) => {
           </Link>
         )}
       </div>
+      <div className="searchBar">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      </div>
       <DataGrid
         className="datagrid"
-        rows={list} 
+        rows={filteredList}
         columns={columns.concat(actionColumn)}
         pageSize={9}
         rowsPerPageOptions={[9]}
